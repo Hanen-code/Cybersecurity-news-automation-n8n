@@ -1,0 +1,287 @@
+{
+  "name": "Cybersecurity News Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "latest cybersecurity news"
+            },
+            {
+              "name": "api_key",
+              "value": "YOUR_SERPAPI_API_KEY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2950e2a6-c221-4ce6-b1f6-e24d1d8ac0cb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        48,
+        0
+      ],
+      "id": "bd59241f-241c-4979-87a4-98a1456d058f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst results = $input.first().json.organic_results || [];\n\nreturn results.slice(0, 5).map(item => ({\n  json: {\n    title: item.title,\n    link: item.link,\n    snippet: item.snippet || \"\"\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "03c1b0c8-f0ec-4fc3-8b86-ba410edf0b1f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "328dcb33-b1d6-4d9c-aaaf-5e26d7a18ebf",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "4ba0e9ba-9910-4421-b859-cef401580733",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            },
+            {
+              "id": "590d68f5-4864-49a1-8a96-c67cd471db26",
+              "name": "description",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "2643994a-1c72-4590-8310-a90d5beec53f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{$json.news}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "1ba566d4-730d-4ea2-a497-8a6acf274693",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hEKtfRuuCoOolKDz",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d2776776-2a44-4a62-9508-ddad8280cdee",
+              "name": "summary",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "13709acb-c6d6-4443-8358-fe5c8e3f089a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "chatId": "7128746026",
+        "text": "={{$json.summary}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "175eeb15-33c3-4769-892b-f87889707a5e",
+      "name": "Send a text message",
+      "webhookId": "2b1bf43d-5ae6-41d0-8ceb-57f08d6b842f",
+      "credentials": {
+        "telegramApi": {
+          "id": "CcxeJbu0bpTq55jF",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst items = $input.all();\n\nconst news = items.map((item, index) => {\n  return `${index + 1}. ${item.json.title}\nالرابط: ${item.json.link}\nالوصف: ${item.json.snippet || \"\"}`;\n});\n\nreturn [\n  {\n    json: {\n      news: news.join(\"\\n\\n\")\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "12a8d3a5-7506-4f7c-8583-5d6454a4f8c7",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d77cfdf8-0a8e-469c-bb38-80ca5f5c284e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97b8d72f429b479fc670178461ac854cdd3436d5ce7050c8e02b8c6088a1c3ce"
+  },
+  "nodeGroups": [],
+  "id": "Bd7Nja2TQ3AVoCDy",
+  "tags": []
+}
