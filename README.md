@@ -8,46 +8,39 @@ This project automatically collects the latest cybersecurity news, processes the
 
 The goal is to automate the process of monitoring cybersecurity news and receiving concise updates without manually searching for new articles.
 
-## ⚙️ How It Works
+## 📸 Screenshots
 
-The workflow follows these steps:
+### 1. n8n Workflow
 
-1. ⏰ Schedule Trigger
-   - Runs the workflow automatically at a scheduled interval.
+The complete automation workflow built using n8n, SerpApi, Google Gemini, and Telegram.
 
-2. 🔎 SerpApi
-   - Searches Google for the latest cybersecurity news.
+![n8n Workflow](screenshots/workflow.jpeg)
 
-3. 💻 JavaScript
-   - Processes and organizes the search results.
+---
 
-4. 🤖 Google Gemini
-   - Summarizes the collected cybersecurity news using AI.
+### 2. Telegram News Summary
 
-5. ✈️ Telegram
-   - Sends the generated summaries directly to a Telegram chat.
+Example of the cybersecurity news summaries automatically delivered to Telegram.
 
-## 🧰 Technologies Used
+![Telegram News Summary](screenshots/telegram.jpeg)
 
-- n8n – Workflow automation
-- SerpApi – Search API for retrieving cybersecurity news
-- Google Gemini – AI-powered news summarization
-- JavaScript – Data processing and formatting
-- Telegram Bot API – Sending news summaries
+## 🛠️ Technologies
+
+- n8n
+- SerpApi
+- Google Gemini
+- Telegram Bot API
+- JavaScript
 
 ## 🔄 Workflow
 
 ```text
-Schedule Trigger
-       ↓
-   HTTP Request
-       ↓
-   SerpApi Search
-       ↓
-JavaScript Processing
-       ↓
-   Google Gemini
-       ↓
-   Data Formatting
-       ↓
-     Telegram
+Trigger
+   ↓
+SerpApi
+   ↓
+Process & Sort News
+   ↓
+Google Gemini
+   ↓
+Telegram
